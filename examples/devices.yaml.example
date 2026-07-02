@@ -1,0 +1,32 @@
+# Esempio di configurazione dispositivi per il provisioning Tailscale mesh IoT
+# Copia questo file in devices.yaml e personalizzalo con i tuoi dispositivi.
+
+devices:
+  - name: hub-principale
+    hostname: hub-home
+    role: hub
+    advertise_routes:
+      - "10.0.0.0/24"
+    advertise_exit_node: true
+    tags:
+      - hub
+    ssh: true
+
+  - name: sensore-soggiorno
+    hostname: iot-livingroom
+    role: iot
+    advertise_routes: []
+    advertise_exit_node: false
+    tags:
+      - iot
+    ssh: false
+
+  - name: gateway-garage
+    hostname: gateway-garage
+    role: gateway
+    advertise_routes:
+      - "192.168.1.0/24"
+    advertise_exit_node: false
+    tags:
+      - gateway
+    ssh: true
