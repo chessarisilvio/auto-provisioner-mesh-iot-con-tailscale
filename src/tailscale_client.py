@@ -19,8 +19,9 @@ class TailscaleClient:
         self.auth_key = auth_key
         self.dry_run = dry_run
 
-    def generate_commands(self, device: Device) -> List[str]:
-        """Genera i comandi 'tailscale up' per un dispositivo."""
+    def _build_argv_list(self, device: Device) -> List[List[str]]:
+        """Costruisce i comandi 'tailscale up' come liste di argomenti
+        (nessuna interpolazione in stringhe di shell)."""
         cmd = ["tailscale", "up", "--authkey", self.auth_key]
 
         if device.advertise_routes:
@@ -35,17 +36,22 @@ class TailscaleClient:
         if not device.ssh:
             cmd.append("--ssh=false")
 
-        return [" ".join(cmd)]
+        return [cmd]
+
+    def generate_commands(self, device: Device) -> List[str]:
+        """Genera i comandi 'tailscale up' per un dispositivo, in forma
+        di stringa leggibile (solo per log/anteprima, non per l'esecuzione)."""
+        return [" ".join(argv) for argv in self._build_argv_list(device)]
 
     def apply(self, device: Device) -> None:
         """Esegue il provisioning del dispositivo tramite Tailscale CLI."""
-        commands = self.generate_commands(device)
-        for command in commands:
+        argv_list = self._build_argv_list(device)
+        for argv in argv_list:
             if self.dry_run:
                 continue
             result = subprocess.run(
-                command,
-                shell=True,
+                argv,
+                shell=False,
                 capture_output=True,
                 text=True,
             )
